@@ -1,3 +1,5 @@
+def shouldDeploy = false
+
 pipeline {
     agent any
 
@@ -8,7 +10,6 @@ pipeline {
     environment {
         VENV_DIR = ".venv"
         DOCKER_IMAGE = "wine_predict_2022bcs0168"
-        SHOULD_DEPLOY = "false"
         CUR_R2 = ""
         CUR_MSE = ""
     }
@@ -102,7 +103,7 @@ pipeline {
 
                     if (!fileExists('previous/artifacts/metrics.json')) {
                         echo "No previous metrics found (first build). Approving deployment."
-                        env.SHOULD_DEPLOY = "true"
+                        shouldDeploy = true
                     } else {
                         def prevMSE = sh(
                             script: "jq '.mse' previous/artifacts/metrics.json",
@@ -127,13 +128,15 @@ pipeline {
                         ).trim()
 
                         if (betterR2 == "1" && betterMSE == "1") {
-                            env.SHOULD_DEPLOY = "true"
+                            shouldDeploy = true
                             echo "Deployment approved (metrics improved)."
                         } else {
-                            env.SHOULD_DEPLOY = "false"
+                            shouldDeploy = false
                             echo "Deployment skipped (no improvement)."
                         }
                     }
+
+                    echo "Gate Decision after Compare stage: shouldDeploy=${shouldDeploy}"
                 }
             }
         }
@@ -141,7 +144,7 @@ pipeline {
         // -------------------------------
         stage('Build Docker Image') {
             when {
-                expression { env.SHOULD_DEPLOY == "true" }
+                expression { return shouldDeploy }
             }
             steps {
                 withCredentials([
@@ -167,7 +170,7 @@ pipeline {
         // -------------------------------
         stage('Push Docker Image') {
             when {
-                expression { env.SHOULD_DEPLOY == "true" }
+                expression { return shouldDeploy }
             }
             steps {
                 withCredentials([
@@ -195,7 +198,7 @@ pipeline {
                             allowEmptyArchive: true
 
             echo "Artifacts archived."
-            echo "Final Gate Decision: SHOULD_DEPLOY=${env.SHOULD_DEPLOY}"
+            echo "Final Gate Decision: shouldDeploy=${shouldDeploy}"
         }
     }
 }
