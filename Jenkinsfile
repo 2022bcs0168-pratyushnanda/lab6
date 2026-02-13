@@ -123,6 +123,7 @@ pipeline {
                             echo "Deployment approved (metrics improved)."
                         } else {
                             shouldDeploy = false
+                            currentBuild.result = 'FAILURE'
                             echo "Deployment skipped (no improvement)."
                         }
                     }
