@@ -30,15 +30,6 @@ pipeline {
                 sh '''
                     set -euxo pipefail
 
-                    # Install system dependencies (first time or if missing)
-                    apt-get update
-                    apt-get install -y \
-                        python3 \
-                        python3-venv \
-                        python3-pip \
-                        jq \
-                        bc
-
                     # Create and activate virtual environment
                     python3 -m venv ${VENV_DIR}
                     . ${VENV_DIR}/bin/activate
