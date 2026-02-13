@@ -102,37 +102,36 @@ pipeline {
                     if (!fileExists('previous/artifacts/metrics.json')) {
                         echo "No previous metrics found (first build). Approving deployment."
                         env.SHOULD_DEPLOY = "true"
-                        return
-                    }
-
-                    def prevMSE = sh(
-                        script: "jq '.mse' previous/artifacts/metrics.json",
-                        returnStdout: true
-                    ).trim()
-
-                    def prevR2 = sh(
-                        script: "jq '.r2' previous/artifacts/metrics.json",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Previous Metrics -> MSE=${prevMSE}, R2=${prevR2}"
-
-                    def betterR2 = sh(
-                        script: "echo '${env.CUR_R2} > ${prevR2}' | bc -l",
-                        returnStdout: true
-                    ).trim()
-
-                    def betterMSE = sh(
-                        script: "echo '${env.CUR_MSE} < ${prevMSE}' | bc -l",
-                        returnStdout: true
-                    ).trim()
-
-                    if (betterR2 == "1" && betterMSE == "1") {
-                        env.SHOULD_DEPLOY = "true"
-                        echo "Deployment approved (metrics improved)."
                     } else {
-                        env.SHOULD_DEPLOY = "false"
-                        echo "Deployment skipped (no improvement)."
+                        def prevMSE = sh(
+                            script: "jq '.mse' previous/artifacts/metrics.json",
+                            returnStdout: true
+                        ).trim()
+
+                        def prevR2 = sh(
+                            script: "jq '.r2' previous/artifacts/metrics.json",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "Previous Metrics -> MSE=${prevMSE}, R2=${prevR2}"
+
+                        def betterR2 = sh(
+                            script: "echo '${env.CUR_R2} > ${prevR2}' | bc -l",
+                            returnStdout: true
+                        ).trim()
+
+                        def betterMSE = sh(
+                            script: "echo '${env.CUR_MSE} < ${prevMSE}' | bc -l",
+                            returnStdout: true
+                        ).trim()
+
+                        if (betterR2 == "1" && betterMSE == "1") {
+                            env.SHOULD_DEPLOY = "true"
+                            echo "Deployment approved (metrics improved)."
+                        } else {
+                            env.SHOULD_DEPLOY = "false"
+                            echo "Deployment skipped (no improvement)."
+                        }
                     }
                 }
             }
