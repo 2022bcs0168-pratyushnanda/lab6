@@ -6,14 +6,14 @@ def get_model():
     # return LinearRegression()
 
     # Experiment 2: Ridge Regression
-    return Ridge(alpha=1.0)
+    # return Ridge(alpha=1.0)
 
     # Example 3: Random Forest
-    # return RandomForestRegressor(
-    #     n_estimators=50,
-    #     max_depth=10,
-    #     random_state=42
-    # )
+    return RandomForestRegressor(
+        n_estimators=50,
+        max_depth=10,
+        random_state=42
+    )
 
     # Example 4: Random Forest
     # return RandomForestRegressor(
