@@ -1,4 +1,6 @@
 def shouldDeploy = false
+def curR2 = ""
+def curMSE = ""
 
 pipeline {
     agent any
@@ -10,8 +12,6 @@ pipeline {
     environment {
         VENV_DIR = ".venv"
         DOCKER_IMAGE = "wine_predict_2022bcs0168"
-        CUR_R2 = ""
-        CUR_MSE = ""
     }
 
     stages {
@@ -57,17 +57,17 @@ pipeline {
         stage('Read Accuracy') {
             steps {
                 script {
-                    env.CUR_MSE = sh(
+                    curMSE = sh(
                         script: "jq '.mse' artifacts/metrics.json",
                         returnStdout: true
                     ).trim()
 
-                    env.CUR_R2 = sh(
+                    curR2 = sh(
                         script: "jq '.r2' artifacts/metrics.json",
                         returnStdout: true
                     ).trim()
 
-                    echo "Current Metrics -> MSE=${env.CUR_MSE}, R2=${env.CUR_R2}"
+                    echo "Current Metrics -> MSE=${curMSE}, R2=${curR2}"
                 }
             }
         }
@@ -109,12 +109,12 @@ pipeline {
                         echo "Previous Metrics -> MSE=${prevMSE}, R2=${prevR2}"
 
                         def betterR2 = sh(
-                            script: "echo '${env.CUR_R2} > ${prevR2}' | bc -l",
+                            script: "echo '${curR2} > ${prevR2}' | bc -l",
                             returnStdout: true
                         ).trim()
 
                         def betterMSE = sh(
-                            script: "echo '${env.CUR_MSE} < ${prevMSE}' | bc -l",
+                            script: "echo '${curMSE} < ${prevMSE}' | bc -l",
                             returnStdout: true
                         ).trim()
 
