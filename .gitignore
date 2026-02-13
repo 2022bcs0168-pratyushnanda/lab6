@@ -1,3 +1,9 @@
+# Artifacts
+artifacts/
+
+# Models
+model/
+
 # Secrets
 secrets/
 
